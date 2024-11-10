@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title style="text-align: center;">Report Generator</title>
+  <link rel="stylesheet" type="text/css" href="print.css" media="print">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+  <style>
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    th,
+    td {
+      border: 1px solid black;
+      padding: 8px;
+      text-align: left;
+      color: black;
+    }
+
+    tr:nth-child(even) {
+      background-color: #F5F5F5;
+      /* Gray for even rows */
+    }
+
+    tr:nth-child(odd) {
+      background-color: white;
+      /* White for odd rows */
+    }
+
+
+    th {
+      background-color: #DCDCDC;
+      color: #006A4E;
+      /* Ensure text is visible with white color */
+    }
+
+
+    /* Adjust the width of the first column */
+    th:first-child,
+    td:first-child {
+      width: 6%;
+      /* Adjust the percentage as needed */
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    /* Underline the text */
+    h1::after {
+      content: "";
+      display: block;
+      margin: auto;
+      width: 30%;
+      padding-top: 5px;
+    }
+
+    @media print {
+
+      button.print-button,
+      button.generate-button,
+      .to-hide-print {
+        display: none;
+      }
+
+      h2 {
+        margin-bottom: -40px;
+        /* Adjust the margin to reduce distance */
+      }
+    }
+
+    h2 {
+      text-align: center;
+      margin-top: 15px;
+      /* Adjust the margin to reduce distance */
+    }
+
+    .inline-group {
+      display: inline-block;
+      margin-right: 20px;
+      /* Add more space between elements */
+    }
+
+    .inline-group label {
+      margin-right: 5px;
+    }
+
+    .inline-group select,
+    .inline-group input[type="date"],
+    .inline-group button {
+      vertical-align: middle;
+    }
+
+    .border-wrapper {
+      border: 1px solid #C8C8C8;
+      /* padding: 2px; */
+      /* margin: 5px; */
+      margin-left: 10px;
+      margin-right: 10px;
+      padding-bottom: 10px;
+      border-radius: 20px;
+    }
+
+    button[type="button"]:hover {
+      background-color: #c9302c;
+      /* Slightly darker red for hover effect */
+      transform: scale(1.05);
+      /* Slight zoom-in effect */
+    }
+
+    /* Container to hold the buttons in place */
+    .button-container {
+      position: fixed;
+      top: 96px;
+      right: 20px;
+      display: flex;
+      gap: 10px;
+      /* Adds spacing between the buttons */
+    }
+
+    /* Styling for both buttons */
+    .generate-button,
+    .print-button {
+      padding: 7px 14px;
+      border: none;
+      border-radius: 8px;
+      background-color: #101010;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    /* Hover effects for buttons */
+    .generate-button:hover,
+    .print-button:hover {
+      background-color: #333333;
+      /* Slightly lighter color for hover effect */
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+
+
+<body style="background-color: #F5F5F5; margin-top: 2%; ">
+
+  <!-- <div style="transform: scale(0.95); transform-origin: top; "> -->
+  <div class="border-wrapper" style="background-color: rgba(255, 255, 255, 1);">
+    <div class="row inline-group to-hide-print" style="position: absolute; top: 9%; left: 90%;">
+      <a href="{{ url_for('userlogout') }}" return render_template('userlogin.html')>
+        <button type="button" style="
+            background-color: black;
+            font-size: 15px;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            padding: 7px 14px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background-color 0.3s ease, transform 0.2s ease;">
+          <b>Logout</b>
+        </button>
+      </a>
+    </div>
+
+
+    <h1><u>Ambertex Universal Export</u></h1>
+    <h2 id="department-heading"></h2> <!-- Department heading -->
+    <br>
+    <div style="transform: scale(0.95); transform-origin: top; ">
+      <!-- <div class="select-data-names inline-group to-hide-print" style="margin-left: 3%;">
+        <select id="data-names-dropdown" onchange="handleDataNameSelection()"
+          style="padding: 8px; border: 1px solid #ccc; border-radius: 5px; font-size: large; font-weight: bold; background-color:rgb(230, 248, 255); border-color: black; font-size: 16px;">
+          <option><b>Selected Fields</b></option>
+          <option value="" selected disabled>Select Data Names</option>
+        </select>
+      </div> -->
+
+
+      <!-- <div class="inline-group to-hide-print">
+        <label for="department" style="margin-left: 10px; font-size: large;"><b>Select a Department:</b></label>
+        <select id="department" onchange="getTables()"
+          style="padding: 8px; border: 1px solid #ccc; border-radius: 5px; border-color: black; background-color: rgb(230, 248, 255); color: #333; font-size: 16px;">
+          {% for department_option in department_options %}
+          <option value="{{ department_option }}">{{ department_option }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="inline-group to-hide-print">
+        <label for="from_date" style="margin-left: 10px; font-size: large;"><b>From Date:</b></label>
+        <input type="date" id="from_date"
+          style="padding: 8px; border: 1px solid #ccc; border-radius: 5px; border-color: black; background-color: rgb(230, 248, 255); color: #333; font-size: 16px;">
+      </div>
+
+      <div class="inline-group to-hide-print">
+        <label for="to_date" style="margin-left: 10px; font-size: large;"><b>To Date:</b></label>
+        <input type="date" id="to_date"
+          style="padding: 8px; border: 1px solid #ccc; border-radius: 5px; border-color: black; background-color: rgb(230, 248, 255); color: #333; font-size: 16px;">
+      </div>
+
+      <div class="inline-group to-hide-print">
+        <label for="time_difference" style="margin-left: 10px; font-size: large;"><b>Time Duration:</b></label>
+        <select id="time_difference"
+          style="padding: 8px; border: 1px solid #ccc; border-radius: 5px; border-color: black; background-color: rgb(230, 248, 255); color: #333; font-size: 16px;">
+          <option></option>
+          <option value="10 minutes">10 minutes</option>
+          <option value="30 minutes">30 minutes</option>
+          <option value="1 hour">1 hour</option>
+          <option value="2 hours">2 hours</option>
+          <option value="5 hours">5 hours</option>
+          <option value="1 Day">1 Day</option>
+        </select>
+      </div> -->
+
+      <div class="form-container"
+        style="display: flex; flex-wrap: nowrap; justify-content: space-between; gap: 50px; align-items: center;">
+        <!-- Selected Fields Dropdown -->
+        <div class="select-data-names inline-group to-hide-print" style="flex: 1; text-align: center;">
+          <label for="data-names-dropdown"
+            style="display: block; font-size: large; font-weight: bold; margin-bottom: 5px;"><b>Selected
+              Fields</b></label>
+          <select id="data-names-dropdown" onchange="handleDataNameSelection()"
+            style="padding: 8px; width: 100%; border: 1px solid #ccc; border-radius: 10px; font-size: large; font-weight: bold; background-color: #F0F0F0; border-color: black; color: #333;">
+            <!-- <option><b>Selected Fields</b></option> -->
+            <option value="" selected disabled>Select Data Names</option>
+          </select>
+        </div>
+
+        <!-- Department Dropdown -->
+        <div class="inline-group to-hide-print" style="flex: 1; text-align: center;">
+          <label for="department"
+            style="display: block; font-size: large; font-weight: bold; margin-bottom: 5px;"><b>Select a
+              Department</b></label>
+          <select id="department" onchange="getTables()"
+            style="padding: 8px; width: 100%; border: 1px solid black; border-radius: 10px; background-color: #F0F0F0; color: #333; font-size: 16px;">
+            {% for department_option in department_options %}
+            <option value="{{ department_option }}">{{ department_option }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- From Date -->
+        <div class="inline-group to-hide-print" style="flex: 1; text-align: center;">
+          <label for="from_date"
+            style="display: block; font-size: large; font-weight: bold; margin-bottom: 5px;"><b>From Date</b></label>
+          <input type="date" id="from_date"
+            style="padding: 8px; width: 100%; border: 1px solid black; border-radius: 10px; background-color: #F0F0F0; color: #333; font-size: 16px;">
+        </div>
+
+        <!-- To Date -->
+        <div class="inline-group to-hide-print" style="flex: 1; text-align: center;">
+          <label for="to_date" style="display: block; font-size: large; font-weight: bold; margin-bottom: 5px;"><b>To
+              Date</b></label>
+          <input type="date" id="to_date"
+            style="padding: 8px; width: 100%; border: 1px solid black; border-radius: 10px; background-color: #F0F0F0; color: #333; font-size: 16px;">
+        </div>
+
+        <!-- Time Duration Dropdown -->
+        <div class="inline-group to-hide-print" style="flex: 1; text-align: center;">
+          <label for="time_difference"
+            style="display: block; font-size: large; font-weight: bold; margin-bottom: 5px;"><b>Time
+              Duration</b></label>
+          <select id="time_difference"
+            style="padding: 8px; width: 100%; border: 1px solid black; border-radius: 10px; background-color: #F0F0F0; color: #333; font-size: 16px;">
+            <option></option>
+            <option value="10 minutes">10 minutes</option>
+            <option value="30 minutes">30 minutes</option>
+            <option value="1 hour">1 hour</option>
+            <option value="2 hours">2 hours</option>
+            <option value="5 hours">5 hours</option>
+            <option value="1 Day">1 Day</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- <button class="generate-button" onclick="getData()"
+        style="margin-left: -17%; position: absolute; margin-top: 58px; padding:4px; border-radius: 5%; background-color: green; color: white;">Generate
+        Report</button> -->
+
+      <div class="button-container">
+        <button class="generate-button" onclick="getData()">
+          <b>Generate Report</b>
+        </button>
+
+        <button class="print-button" onclick="prepareAndPrintReport()">
+          <i class="fas fa-print"></i>
+        </button>
+      </div>
+      </button>
+
+
+
+
+      <br>
+      <br>
+      <br>
+      <br>
+    </div>
+
+    <div style="transform: scale(0.95); transform-origin: top; ">
+      <table id="table-report"></table>
+
+    </div>
+
+  </div>
+
+  <script>
+    function getTables() {
+      var department = document.getElementById('department').value;
+      // Set department heading dynamically
+      document.getElementById('department-heading').innerText = department;
+      fetch('/data', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'department=' + encodeURIComponent(department)
+      })
+        .then(response => response.json())
+        .then(data => {
+          let rh_columns = data.rh_columns;
+          let temp_columns = data.temp_columns;
+          let rh_data = data.rh_data;
+          let temp_data = data.temp_data;
+
+          displayData(rh_columns, temp_columns, rh_data, temp_data);
+        })
+        .catch(error => {
+          console.error('Error fetching data:', error);
+          // Display an error message to the user if needed
+        });
+    }
+
+    function getData() {
+      var department = document.getElementById('department').value;
+      var from_date = document.getElementById('from_date').value;
+      var to_date = document.getElementById('to_date').value;
+      var time_difference = document.getElementById('time_difference').value;
+      // Retrieve selected columns from sessionStorage
+      var selected_fields = localStorage.getItem('selected_columns');
+      if (!selected_fields) {
+        selected_fields = []; // Set an empty array if no columns are selected
+      } else {
+        selected_fields = selected_fields.split(',');
+      }
+      fetch('/data', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        // Added the selected_fields to the request body
+        body: 'department=' + encodeURIComponent(department) + '&from_date=' + encodeURIComponent(from_date) + '&to_date=' + encodeURIComponent(to_date) + '&time_difference=' + encodeURIComponent(time_difference) + '&selected_fields=' + encodeURIComponent(selected_fields.join(','))
+      })
+        .then(response => response.json())
+        .then(data => {
+          let rh_columns = data.rh_columns;
+          let temp_columns = data.temp_columns;
+          let rh_data = data.rh_data;
+          let temp_data = data.temp_data;
+
+          // Combine RH and temperature columns and remove duplicates
+          var all_columns = [...rh_columns, ...temp_columns];
+          var selected_columns = selected_fields.filter(column => all_columns.includes(column));
+
+
+          // Filter out the 'idx' column
+          selected_columns = selected_columns.filter(column => column !== 'idx');
+
+          displayData(selected_columns, rh_data, temp_data);
+
+        })
+        .catch(error => {
+          console.error('Error fetching data:', error);
+        });
+    }
+
+    function displayData(selected_columns, rh_data, temp_data) {
+      var table = document.getElementById('table-report');
+      var table_html = '<thead><tr>';
+
+      // Add serial number as the first column header
+      table_html += '<th>Serial No.</th>';
+      // Add date and time columns
+      table_html += '<th>Date</th>';
+      table_html += '<th>Time</th>';
+
+      // Map for column name translations
+      var columnMap = {
+        'act_rh': 'actual_rh',
+        'act_temp': 'actual_temp'
+      };
+
+      // Add selected columns headers
+      // selected_columns.forEach(column => {
+      //   table_html += '<th>' + column + '</th>';
+      // });
+
+      // Add selected columns headers
+      selected_columns.forEach(column => {
+        var displayColumn = columnMap[column] || column; // Use mapped name if available, else use original
+        table_html += '<th>' + displayColumn + '</th>';
+      });
+
+      table_html += '</tr></thead><tbody>';
+
+      // Determine the maximum number of rows from both RH and temperature data
+      var maxRows = Math.max(rh_data.length, temp_data.length);
+
+      // Add table rows with data
+      for (var i = 0; i < maxRows; i++) {
+        table_html += '<tr>';
+        table_html += '<td>' + (i + 1) + '</td>'; // Serial number
+
+        // Add date and time values
+        var date = rh_data[i] ? rh_data[i]['date'] : '';
+        var time = rh_data[i] ? rh_data[i]['time'] : '';
+        table_html += '<td>' + date + '</td>';
+        table_html += '<td>' + time + '</td>';
+
+        // Add data for selected columns
+        selected_columns.forEach(column => {
+          var rh_value = rh_data[i] ? rh_data[i][column] : undefined;
+          var temp_value = temp_data[i] ? temp_data[i][column] : undefined;
+          var value = rh_value !== undefined ? rh_value : (temp_value !== undefined ? temp_value : ''); // Check for undefined instead of null
+          // table_html += '<td>' + (value !== undefined ? value : '') + '</td>'; // Ensure value is not undefined
+
+          // Display mapped value if column name is in the map
+          var displayValue = value !== undefined ? value : '';
+          var displayColumn = columnMap[column] || column;
+          table_html += '<td>' + displayValue + '</td>'; // Ensure value is not undefined
+
+        });
+
+        table_html += '</tr>';
+      }
+
+      table_html += '</tbody>';
+
+      // Display the table
+      table.innerHTML = table_html;
+    }
+
+
+    function populateDataNamesDropdown(selected_columns) {
+      var dataNamesDropdown = document.getElementById('data-names-dropdown');
+      dataNamesDropdown.innerHTML = ''; // Clear existing options
+
+      // Add the default "Selected Fields" option
+      var defaultOption = document.createElement('option');
+      defaultOption.text = ' ';
+      defaultOption.setAttribute('style', 'font-weight: bold'); // Set the font weight to bold
+      dataNamesDropdown.add(defaultOption);
+
+
+
+      if (selected_columns) {
+        selected_columns = selected_columns.split(',');
+        selected_columns.forEach(function (column) {
+          var option = document.createElement('option');
+          option.value = column;
+          option.textContent = column;
+          dataNamesDropdown.appendChild(option);
+        });
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      // Retrieve selected columns from sessionStorage (if any)
+      var selected_columns = localStorage.getItem('selected_columns');
+
+      // Assuming you have a function to populate the dropdown based on data (replace with your implementation)
+      populateDataNamesDropdown(selected_columns);
+    });
+
+
+    function handleDataNameSelection() {
+      var selectedDataName = document.getElementById('data-names-dropdown').value;
+      // Implement logic to handle the selected data name
+    }
+
+
+    function populateDataNamesList(selected_columns) {
+      var dataNamesList = document.getElementById('data-names-list');
+      dataNamesList.innerHTML = ''; // Clear existing list items
+
+      if (selected_columns) {
+        selected_columns = selected_columns.split(',');
+        selected_columns.forEach(function (column) {
+          var listItem = document.createElement('li');
+          listItem.textContent = column;
+          // Add functionality to handle user selection of data names (e.g., pre-select checkboxes in your form)
+          listItem.addEventListener('click', function () {
+            // Implement logic to handle user selection (e.g., pre-select checkboxes in the user form)
+          });
+          dataNamesList.appendChild(listItem);
+        });
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      // Retrieve selected columns from localStorage and mark checkboxes as checked
+      var selected_columns = localStorage.getItem('selected_columns');
+      if (selected_columns) {
+        selected_columns = selected_columns.split(',');
+        selected_columns.forEach(function (column) {
+          var checkbox = document.getElementById(column);
+          if (checkbox) {
+            checkbox.checked = true;
+          }
+        });
+        updateSelectedNamesDropdown();
+      }
+
+      // Add event listeners to field checkboxes
+      var fieldCheckboxes = document.querySelectorAll('.field-checkbox');
+      fieldCheckboxes.forEach(function (checkbox) {
+        checkbox.addEventListener('change', updateSelectedNamesDropdown);
+      });
+    });
+
+    function toggleAllOptions() {
+      var selectAllCheckbox = document.getElementById('select_all');
+      var fieldCheckboxes = document.querySelectorAll('.field-checkbox');
+
+      fieldCheckboxes.forEach(function (checkbox) {
+        checkbox.checked = selectAllCheckbox.checked;
+      });
+
+      updateSelectedNamesDropdown();
+    }
+
+    function updateSelectedNamesDropdown() {
+      var selectedNamesDropdown = document.getElementById('selected-names-dropdown');
+      selectedNamesDropdown.innerHTML = ''; // Clear previous options
+
+      // Add the default "Selected data names list" option
+      var defaultOption = document.createElement('option');
+      defaultOption.text = 'Selected data names list';
+      selectedNamesDropdown.add(defaultOption);
+
+      var selected_columns = [];
+      document.querySelectorAll('.field-checkbox:checked').forEach(function (checkbox) {
+        selected_columns.push(checkbox.value);
+      });
+
+      // If columns are selected, update the dropdown options
+      if (selected_columns.length !== 0) {
+        selected_columns.forEach(function (column) {
+          var option = document.createElement('option');
+          option.text = column;
+          selectedNamesDropdown.add(option);
+        });
+      }
+
+      // Store selected columns in localStorage
+      localStorage.setItem('selected_columns', selected_columns.join(','));
+    }
+
+
+    function prepareAndPrintReport() {
+      // Hide unnecessary elements before printing
+      var toHideElements = document.querySelectorAll('.to-hide-print');
+      toHideElements.forEach(element => {
+        element.style.display = 'none';
+      });
+
+      // Print the report
+      window.print();
+
+      // Show the elements after printing
+      toHideElements.forEach(element => {
+        element.style.display = '';
+      });
+    }
+
+
+  </script>
+
+</body>
+
+</html>

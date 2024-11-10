@@ -1,0 +1,14 @@
+/* Hide the buttons when printing */
+button.print-button {
+    display: none;
+}
+
+/* Hide the footer when printing */
+.page-footer {
+    display: none;
+}
+
+
+.border-wrapper {
+    display: none;
+}

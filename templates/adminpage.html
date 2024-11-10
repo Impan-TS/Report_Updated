@@ -1,0 +1,183 @@
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Admin Account</title>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css">
+</head>
+
+<body style="background-color: rgba(0, 213, 225, 0.975)">
+
+	<div class="row" style="position: fixed; left: 70%; top: 27%; transform: translate(-50%, -50%); z-index: 9999;">
+		<a href="{{ url_for('index') }}" style="text-decoration: none;">
+			<button type="button"
+				style="background-color: rgb(26, 26, 255); font-size: 20px; border: black; border-radius: 5%; color: white; padding: 5px 14px; cursor: pointer;"><b>Add User</b></button>
+		</a>
+	</div>
+
+	<div class="row" style="position: fixed; left: 81%; top: 26.8%; transform: translate(-50%, -50%); z-index: 9999;">
+		<a href="{{ url_for('addadmin') }}" style="text-decoration: none;">
+			<button type="button"
+				style="background-color: green; font-size: 20px; border: black; border-radius: 5%; color: white; padding: 5px 14px; cursor: pointer;"><b>Add Admin</b></button>
+		</a>
+	</div>
+
+	<div class="container">
+		<div class="row">
+			<h1></h1>
+		</div>
+		<br>
+		<div class="row" style="margin-left: 40%; margin-top: 4%; color: black;">
+			<h1><u>TSE Admin</u></h1>
+		</div>
+		<br>
+		<div class="row" style="margin-left: 95%;">
+			<a href="{{ url_for('logout') }}"><button type="submit"
+					style="background-color: #f44336; font-size: 20px; border: black; border-radius: 5%; color:white; padding: 4px 14px;;"><b>Logout</b></button></a>
+		</div>
+		<br>
+		<div class="row">
+
+			<h2></h2>
+		</div>
+	</div>
+
+	<div class="inline-group to-hide-print"
+		style="margin-left: 10%; margin-top: -5%; font-size: larger; font-weight: 500;">
+		<div style="background-color: #caf4ff; padding:1% 1% 1% 2%; margin-right:83% ; border-radius: 5px;">
+			<label><b>Select a Fields :</b></label><br>
+			<input type="checkbox" id="select_all" onclick="toggleAllOptions()">
+			<label for="select_all">All</label><br>
+			<input type="checkbox" class="field-checkbox" id="act_rh" value="act_rh">
+			<label for="act_rh">act_rh</label><br>
+			<input type="checkbox" class="field-checkbox" id="act_temp" value="act_temp">
+			<label for="act_temp">act_temp</label><br>
+			<input type="checkbox" class="field-checkbox" id="wot_temp" value="wot_temp">
+			<label for="wot_temp">wot_temp</label><br>
+			<input type="checkbox" class="field-checkbox" id="SAF_Speed" value="SAF_Speed">
+			<label for="SAF_Speed">SAF_Speed</label><br>
+			<input type="checkbox" class="field-checkbox" id="set_rh" value="set_rh">
+			<label for="set_rh">set_rh</label><br>
+			<input type="checkbox" class="field-checkbox" id="wp_ref" value="wp_ref">
+			<label for="wp_ref">wp_ref</label><br>
+			<input type="checkbox" class="field-checkbox" id="wp_status" value="wp_status">
+			<label for="wp_status">wp_status</label><br>
+			<input type="checkbox" class="field-checkbox" id="set_temp" value="set_temp">
+			<label for="set_temp">set_temp</label><br>
+			<input type="checkbox" class="field-checkbox" id="wot_sp" value="wot_sp">
+			<label for="wot_sp">wot_sp</label><br>
+			<input type="checkbox" class="field-checkbox" id="fre_damper" value="fre_damper">
+			<label for="fre_damper">fre_damper</label><br>
+		</div>
+
+
+		<div class="selected-columns" style="display: none;">
+			<h2>Selected Data Names:</h2>
+			<ul id="selected-columns-list"></ul>
+		</div>
+
+		<button onclick="submitSelectedColumns()" style="display: none;">Submit Selected Columns</button>
+
+
+		<script>
+
+			document.addEventListener('DOMContentLoaded', function () {
+				// Retrieve selected columns from sessionStorage and mark checkboxes as checked
+				var selected_columns = localStorage.getItem('selected_columns');
+				if (selected_columns) {
+					selected_columns = selected_columns.split(',');
+					selected_columns.forEach(function (column) {
+						var checkbox = document.getElementById(column);
+						if (checkbox) {
+							checkbox.checked = true;
+						}
+					});
+				}
+
+				// Add event listener to field checkboxes
+				var fieldCheckboxes = document.querySelectorAll('.field-checkbox');
+				fieldCheckboxes.forEach(function (checkbox) {
+					checkbox.addEventListener('change', updateSelectedColumnsList);
+				});
+			});
+
+			function toggleAllOptions() {
+				var selectAllCheckbox = document.getElementById('select_all');
+				var fieldCheckboxes = document.querySelectorAll('.field-checkbox');
+
+				if (selectAllCheckbox.checked) {
+					fieldCheckboxes.forEach(function (checkbox) {
+						checkbox.checked = true;
+					});
+				} else {
+					fieldCheckboxes.forEach(function (checkbox) {
+						checkbox.checked = false;
+					});
+				}
+
+				// Store selected columns in sessionStorage
+				updateSelectedColumnsList();
+			}
+
+
+
+			function updateSelectedColumnsList() {
+				var selectedColumnsList = document.getElementById('selected-columns-list');
+				selectedColumnsList.innerHTML = ''; // Clear existing list items
+
+				var selected_columns = [];
+				var fieldCheckboxes = document.querySelectorAll('.field-checkbox');
+				fieldCheckboxes.forEach(function (checkbox) {
+					if (checkbox.checked) {
+						selected_columns.push(checkbox.value);
+						var listItem = document.createElement('li');
+						listItem.textContent = checkbox.value;
+						selectedColumnsList.appendChild(listItem);
+					}
+				});
+
+				// Store selected columns in sessionStorage for access in index.html
+				localStorage.setItem('selected_columns', selected_columns.join(','));
+			}
+
+			function submitSelectedColumns() {
+				// Submit form with selected columns data (implementation depends on your form setup)
+				var form = document.getElementById('admin-form'); // Replace with your form ID
+				if (form) {
+					form.submit();
+				} else {
+					console.error('Form not found');
+				}
+			}
+
+
+			function updateSelectedNamesDropdown() {
+				var selectedNamesDropdown = document.getElementById('selected-names-dropdown');
+				selectedNamesDropdown.innerHTML = ''; // Clear previous options
+
+				// Add the default "Selected data names list" option
+				var defaultOption = document.createElement('option');
+				defaultOption.text = 'Selected data names list';
+				selectedNamesDropdown.add(defaultOption);
+
+				var selected_columns = [];
+				var fieldCheckboxes = document.querySelectorAll('.field-checkbox:checked');
+				fieldCheckboxes.forEach(function (checkbox) {
+					selected_columns.push(checkbox.value);
+				});
+
+				// If columns are selected, update the dropdown options
+				if (selected_columns.length !== 0) {
+					selected_columns.forEach(function (column) {
+						var option = document.createElement('option');
+						option.text = column;
+						selectedNamesDropdown.add(option);
+					});
+				}
+			}
+
+		</script>
+</body>
+
+</html>
